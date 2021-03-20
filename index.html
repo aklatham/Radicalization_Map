@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Radical Individuals</title>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v1.7.0/mapbox-gl.js'></script>
+	<link href='https://api.mapbox.com/mapbox-gl-js/v1.7.0/mapbox-gl.css' rel='stylesheet' />
+</head>
+<style type="text/css">
+#map {
+    position:absolute;
+    width: 100%;
+    height: 100%;
+
+}
+
+#map canvas {
+cursor: crosshair;
+}
+
+svg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.button {
+	background-color: #737373; 
+  border: none;
+  color: #191a1a;
+  padding: 10px 10px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 12px;
+}
+
+</style>
+<body style = "background-color:#191a1a">
+	<h1 style="text-align:center; color:#737373;">Mapping of Radical Individuals</h1>
+	<h3 style="text-align:center; color:#737373;">Archibald Latham and Nicole Leigh</h3> 
+
+	<div style="text-align:center;"> 
+	<button id='dist' class="button" onclick="all_show()">All Individuals</button>
+	<button id='dist' class="button" onclick="vil_show()">Violent Individuals</button>
+	<button id='dist' class="button" onclick="att_show()">Successful Attacks</button>
+	</div>
+	<br>
+
+	<div id='map' style='width: 1370px; height: 675px;'></div>
+</body>
+<script type="text/javascript">
+	var cen = [-98.35, 35.50];
+
+
+	mapboxgl.accessToken = 'pk.eyJ1IjoiYWtsYXRoYW0iLCJhIjoiY2s4cnYxN2o0MDFwbzNvcjQ0OHhvcjdoOSJ9.lDo3zRd-OEfZwdTl5eFeEA';
+
+	var map = new mapboxgl.Map({
+	    container: 'map',
+	    center: cen,
+	    maxZoom: 15,
+	    minZoom: 3,
+	    zoom: 3,
+	    style: 'mapbox://styles/mapbox/dark-v10'
+	});
+
+
+	map.on('load', function() {
+		map.addSource('radicals', {
+		type: 'geojson',
+		data:'data/radicals_updated.geojson',
+		cluster: true,
+		clusterMaxZoom: 16, 
+		clusterRadius: 50 	});
+
+	map.addLayer({
+		id: 'clusters',
+		type: 'circle',
+		source: 'radicals',
+		filter: ['has', 'point_count'],
+		paint: {
+			
+			'circle-color': [
+			'step',
+			['get', 'point_count'],
+			'#fae528',
+			25,
+			'#f0a118',
+			100,
+			'#f53f38'
+			],
+		'circle-radius': [
+			'step',
+			['get', 'point_count'],
+			20,
+			25,
+			30,
+			100,
+			40
+			]
+		},
+		layout: {
+			'visibility': 'visible'
+		}
+	});
+
+	map.addLayer({
+		id: 'cluster-count',
+		type: 'symbol',
+		source: 'radicals',
+		filter: ['has', 'point_count'],
+		layout: {
+		'text-field': '{point_count_abbreviated}',
+		'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+		'text-size': 12,
+		'visibility': 'visible'
+
+		}
+		});
+ 
+ 	map.addLayer({
+		id: 'unclustered-point',
+		type: 'circle',
+		source: 'radicals',
+		filter: ['!', ['has', 'point_count']],
+		paint: {
+		'circle-color': '#fae528',
+		'circle-radius': 10,
+		},
+		layout: {
+			'visibility': 'visible'
+		}
+		});
+	
+	
+});
+
+function all_show(){
+	map.getSource('radicals').setData('data/radicals_updated.geojson');
+	map.setPaintProperty('clusters', 'circle-color', [
+			'step',
+			['get', 'point_count'],
+			'#fae528',
+			25,
+			'#f0a118',
+			100,
+			'#f53f38'
+			]);
+	map.setPaintProperty('unclustered-point', 'circle-color', '#fae528')
+}
+
+function vil_show(){
+	map.getSource('radicals').setData('data/vil_radicals_updated.geojson');
+	map.setPaintProperty('clusters', 'circle-color', [
+			'step',
+			['get', 'point_count'],
+			'#33adff',
+			25,
+			'#543dff',
+			100,
+			'#850aff'
+			]);
+	map.setPaintProperty('unclustered-point', 'circle-color', '#33adff')
+}
+
+function att_show(){
+	map.getSource('radicals').setData('data/att_radicals_updated.geojson');
+	map.setPaintProperty('clusters', 'circle-color', [
+			'step',
+			['get', 'point_count'],
+			'#0aff74',
+			25,
+			'#24c912',
+			100,
+			'#24c912'
+			]);
+	map.setPaintProperty('unclustered-point', 'circle-color', '#0aff74')
+}
+
+
+</script>
+</html>
